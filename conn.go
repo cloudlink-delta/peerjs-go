@@ -27,7 +27,7 @@ func newBaseConnection(connType string, peer *Peer, opts ConnectionOptions) Base
 		Emitter:    emitter.NewEmitter(),
 		Type:       connType,
 		Provider:   peer,
-		log:        createLogger(connType, zerolog.DebugLevel),
+		log:        createLogger(connType, opts.LogLevel),
 		opts:       opts,
 		negotiator: nil,
 	}

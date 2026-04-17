@@ -32,7 +32,6 @@ func NewOptions() Options {
 			},
 			SDPSemantics: webrtc.SDPSemanticsUnifiedPlan,
 		},
-		LogLevel: zerolog.DebugLevel,
 	}
 }
 

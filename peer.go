@@ -55,7 +55,7 @@ func NewPeer(id string, opts Options) (*Peer, error) {
 		}
 	}
 
-	p.log = createLogger(fmt.Sprintf("peer:%s", id), zerolog.DebugLevel)
+	p.log = createLogger(fmt.Sprintf("peer:%s", id), opts.LogLevel)
 
 	err := p.initialize(id)
 	if err != nil {

@@ -26,7 +26,7 @@ func newWebrtcAPI(mediaEngine *webrtc.MediaEngine) *webrtc.API {
 func NewNegotiator(conn Connection, opts ConnectionOptions) *Negotiator {
 	return &Negotiator{
 		connection: conn,
-		log:        createLogger("negotiator", zerolog.DebugLevel),
+		log:        createLogger("negotiator", opts.LogLevel),
 		webrtc:     newWebrtcAPI(opts.MediaEngine),
 	}
 }

@@ -14,7 +14,7 @@ import (
 func NewAPI(opts Options) API {
 	return API{
 		opts: opts,
-		log:  createLogger("api", zerolog.DebugLevel),
+		log:  createLogger("api", opts.LogLevel),
 	}
 }
 

@@ -26,7 +26,7 @@ type SocketEvent struct {
 func NewSocket(opts Options) *Socket {
 	s := &Socket{
 		Emitter: emitter.NewEmitter(),
-		log:     createLogger("socket", zerolog.DebugLevel),
+		log:     createLogger("socket", opts.LogLevel),
 	}
 	s.opts = opts
 	s.disconnected = true
@@ -154,7 +154,7 @@ func (s *Socket) Start(id string, token string) error {
 				continue
 			}
 
-			s.log.Info().Msgf("websocket message: %s", raw)
+			s.log.Debug().Msgf("websocket message: %s", raw)
 
 			if msgType == websocket.TextMessage {
 
