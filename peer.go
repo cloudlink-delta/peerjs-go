@@ -178,7 +178,8 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 
 		var err error
 		// Create a new connection.
-		if payload.Type == enums.ConnectionTypeMedia {
+		switch payload.Type {
+		case enums.ConnectionTypeMedia:
 			connection, err = NewMediaConnection(peerID, p, ConnectionOptions{
 				ConnectionID: connectionID,
 				Payload:      payload,
@@ -190,7 +191,7 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 			}
 			p.AddConnection(peerID, connection)
 			p.Emit(enums.PeerEventTypeCall, connection)
-		} else if payload.Type == enums.ConnectionTypeData {
+		case enums.ConnectionTypeData:
 			connection, err = NewDataConnection(peerID, p, ConnectionOptions{
 				ConnectionID:  connectionID,
 				Payload:       payload,
@@ -206,7 +207,7 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 			}
 			p.AddConnection(peerID, connection)
 			p.Emit(enums.PeerEventTypeConnection, connection)
-		} else {
+		default:
 			p.log.Warnf(`Received malformed connection type:%s`, payload.Type)
 			return
 		}
