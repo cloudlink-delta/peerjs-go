@@ -7,7 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type xMessage struct{}
+// Where exactly does this go?
+// type xMessage struct{}
 
 func TestRealmClients(t *testing.T) {
 	r := NewRealm()

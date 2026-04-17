@@ -10,7 +10,7 @@ import (
 	"github.com/cloudlink-delta/peerjs-go/models"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
 // NewOptions create default options
@@ -18,7 +18,7 @@ func NewOptions() Options {
 	return Options{
 		Port:            9000,
 		Host:            "0.0.0.0",
-		LogLevel:        "info",
+		LogLevel:        zerolog.InfoLevel,
 		ExpireTimeout:   5000,
 		AliveTimeout:    60000,
 		Key:             "peerjs",
@@ -33,7 +33,7 @@ func NewOptions() Options {
 type Options struct {
 	Port            int
 	Host            string
-	LogLevel        string
+	LogLevel        zerolog.Level
 	ExpireTimeout   int64
 	AliveTimeout    int64
 	Key             string
@@ -47,7 +47,7 @@ type Options struct {
 type HTTPServer struct {
 	opts           Options
 	realm          IRealm
-	log            *logrus.Entry
+	log            zerolog.Logger
 	messageHandler *MessageHandler
 	router         *mux.Router
 	http           *http.Server
@@ -130,7 +130,7 @@ func (h *HTTPServer) peersHandler() http.HandlerFunc {
 		rw.Header().Add("content-type", "application/json")
 		raw, err := json.Marshal(h.realm.GetClientsIds())
 		if err != nil {
-			h.log.Warnf("/peers: Marshal error %s", err)
+			h.log.Warn().Msgf("/peers: Marshal error %s", err)
 			rw.WriteHeader(http.StatusInternalServerError)
 			rw.Write([]byte{})
 			return
@@ -142,7 +142,7 @@ func (h *HTTPServer) peersHandler() http.HandlerFunc {
 func (h *HTTPServer) registerHandlers() error {
 
 	baseRoute := h.router.PathPrefix(h.opts.Path).Subrouter()
-	h.log.Debugf("Path prefix: %s", h.opts.Path)
+	h.log.Debug().Msgf("Path prefix: %s", h.opts.Path)
 
 	err := baseRoute.
 		HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {

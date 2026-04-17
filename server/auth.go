@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
 // NewAuth init a new Auth middleware
@@ -20,7 +20,7 @@ func NewAuth(realm IRealm, opts Options) *Auth {
 // Auth handles request authentication
 type Auth struct {
 	opts  Options
-	log   *logrus.Entry
+	log   zerolog.Logger
 	realm IRealm
 }
 
@@ -37,7 +37,7 @@ var errInvalidKey = AuthError{Err: errors.New(ErrorInvalidKey), StatusCode: http
 var errInvalidToken = AuthError{Err: errors.New(ErrorInvalidToken), StatusCode: http.StatusUnauthorized}
 var errUnauthorized = AuthError{Err: errors.New(http.StatusText(http.StatusUnauthorized)), StatusCode: http.StatusUnauthorized}
 
-//checkRequest check if the input is valid
+// checkRequest check if the input is valid
 func (a *Auth) checkRequest(key, id, token string) error {
 
 	if key != a.opts.Key {
@@ -61,7 +61,7 @@ func (a *Auth) checkRequest(key, id, token string) error {
 	return nil // no error
 }
 
-//WSHandler return a websocket handler middleware
+// WSHandler return a websocket handler middleware
 func (a *Auth) WSHandler(handler http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -80,7 +80,7 @@ func (a *Auth) WSHandler(handler http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-//HTTPHandler return an HTTP handler middleware
+// HTTPHandler return an HTTP handler middleware
 func (a *Auth) HTTPHandler(handler http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

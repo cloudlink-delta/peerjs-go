@@ -10,6 +10,7 @@ import (
 	"github.com/cloudlink-delta/peerjs-go/server"
 	"github.com/cloudlink-delta/peerjs-go/util"
 	"github.com/pion/webrtc/v3"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +24,7 @@ func getTestOpts(serverOpts server.Options) Options {
 	opts.Host = serverOpts.Host
 	opts.Port = serverOpts.Port
 	opts.Secure = false
-	opts.Debug = 3
+	opts.LogLevel = zerolog.DebugLevel
 	return opts
 }
 
@@ -32,7 +33,7 @@ func startServer() (*server.PeerServer, server.Options) {
 	opts.Port = 9000
 	opts.Host = "localhost"
 	opts.Path = "/myapp"
-	opts.LogLevel = "debug"
+	opts.LogLevel = zerolog.DebugLevel
 	return server.New(opts), opts
 }
 

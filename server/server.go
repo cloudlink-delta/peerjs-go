@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/cloudlink-delta/peerjs-go/emitter"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
 // New creates a new PeerServer
@@ -37,7 +37,7 @@ func New(opts Options) *PeerServer {
 // PeerServer wrap the peer server functionalities
 type PeerServer struct {
 	emitter.Emitter
-	log                    *logrus.Entry
+	log                    zerolog.Logger
 	http                   *HTTPServer
 	realm                  IRealm
 	auth                   *Auth
@@ -89,7 +89,7 @@ func (p *PeerServer) Stop() error {
 	p.http.Stop()
 	p.messageExpire.Stop()
 	p.checkBrokenConnections.Stop()
-	p.log.Info("Peer server stopped")
+	p.log.Info().Msg("Peer server stopped")
 	return nil
 }
 
@@ -106,7 +106,7 @@ func (p *PeerServer) Start() error {
 
 	<-time.After(time.Millisecond * 500)
 	if err == nil {
-		p.log.Infof("Peer server started (:%d)", p.http.opts.Port)
+		p.log.Info().Msgf("Peer server started (:%d)", p.http.opts.Port)
 	}
 	return err
 }
@@ -124,7 +124,7 @@ func (p *PeerServer) StartTLS(certFile, keyFile string) error {
 
 	<-time.After(time.Millisecond * 500)
 	if err == nil {
-		p.log.Infof("Peer server started (:%d)", p.http.opts.Port)
+		p.log.Info().Msgf("Peer server started (:%d)", p.http.opts.Port)
 	}
 	return err
 }

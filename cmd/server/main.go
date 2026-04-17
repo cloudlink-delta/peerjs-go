@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/cloudlink-delta/peerjs-go/server"
+	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
 )
 
@@ -45,7 +46,7 @@ func main() {
 		opts.Port = viper.GetInt("Port")
 	}
 	if viper.IsSet("LogLevel") {
-		opts.LogLevel = viper.GetString("LogLevel")
+		opts.LogLevel = (zerolog.Level)(viper.GetInt("LogLevel"))
 	}
 	if viper.IsSet("ExpireTimeout") {
 		opts.ExpireTimeout = viper.GetInt64("ExpireTimeout")

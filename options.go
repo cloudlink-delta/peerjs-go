@@ -5,6 +5,7 @@ import (
 	"github.com/cloudlink-delta/peerjs-go/models"
 	"github.com/cloudlink-delta/peerjs-go/util"
 	"github.com/pion/webrtc/v3"
+	"github.com/rs/zerolog"
 )
 
 // NewOptions return Peer options with defaults
@@ -31,7 +32,7 @@ func NewOptions() Options {
 			},
 			SDPSemantics: webrtc.SDPSemanticsUnifiedPlan,
 		},
-		Debug: 0,
+		LogLevel: zerolog.DebugLevel,
 	}
 }
 
@@ -51,13 +52,8 @@ type Options struct {
 	Secure bool
 	//Configuration hash passed to RTCPeerConnection. This hash contains any custom ICE/TURN server configuration. Defaults to { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }], 'sdpSemantics': 'unified-plan' }
 	Configuration webrtc.Configuration
-	// Debug
-	// Prints log messages depending on the debug level passed in. Defaults to 0.
-	// 0 Prints no logs.
-	// 1 Prints only errors.
-	// 2 Prints errors and warnings.
-	// 3 Prints all logs.
-	Debug int8
+	//Logging mechanism
+	LogLevel zerolog.Level
 	//Token a string to group peers
 	Token string
 }
@@ -66,7 +62,7 @@ type Options struct {
 func NewConnectionOptions() *ConnectionOptions {
 	return &ConnectionOptions{
 		Serialization: enums.SerializationTypeRaw,
-		Debug:         -1,
+		LogLevel:      zerolog.PanicLevel,
 	}
 }
 
@@ -90,8 +86,8 @@ type ConnectionOptions struct {
 	Originator bool
 	// SDP contains SDP information
 	SDP webrtc.SessionDescription
-	// Debug level for debug taken. See Options
-	Debug int8
+	// Logging mechanism
+	LogLevel zerolog.Level
 	// SDPTransform transformation function for SDP message
 	SDPTransform func(string) string
 	// MediaEngine override the default pion webrtc MediaEngine used in negotiating media channels. This allows you to specify your own supported media formats and parameters.

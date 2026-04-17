@@ -1,38 +1,20 @@
 package peer
 
 import (
-	"github.com/sirupsen/logrus"
+	"os"
+	"time"
+
+	"github.com/rs/zerolog"
 )
 
-func createLogger(source string, debugLevel int8) *logrus.Entry {
+func createLogger(source string, level zerolog.Level) zerolog.Logger {
+	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+	log := zerolog.New(output).With().Timestamp().Logger().Level(level)
 
-	log := logrus.New()
+	logger := log.With().
+		Str("module", "peer").
+		Str("source", source).
+		Logger()
 
-	// 0 Prints no logs.
-	// 1 Prints only errors.
-	// 2 Prints errors and warnings.
-	// 3 Prints all logs.
-	switch debugLevel {
-	case 0:
-		log.SetLevel(logrus.PanicLevel)
-	case 1:
-		log.SetLevel(logrus.ErrorLevel)
-	case 2:
-		log.SetLevel(logrus.WarnLevel)
-	default:
-		log.SetLevel(logrus.DebugLevel)
-	}
-
-	//TODO configure logger format
-	// log.SetFormatter(&logrus.JSONFormatter{})
-	log.SetFormatter(&logrus.TextFormatter{})
-
-	// log to stderr by default
-	// log.SetOutput(os.Stderr)
-	// log.SetOutput(os.Stdout)
-
-	return log.WithFields(logrus.Fields{
-		"module": "peer",
-		"source": source,
-	})
+	return logger
 }

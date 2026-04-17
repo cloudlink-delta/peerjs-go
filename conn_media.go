@@ -58,7 +58,7 @@ func (m *MediaConnection) GetRemoteStream() *MediaStream {
 
 // AddStream adds a stream to the MediaConnection
 func (m *MediaConnection) AddStream(tr *webrtc.TrackRemote) {
-	m.log.Debugf("Receiving stream: %v", tr)
+	m.log.Debug().Msgf("Receiving stream: %v", tr)
 	m.remoteStream = NewMediaStreamWithTrack([]MediaStreamTrack{tr})
 	m.Emit(enums.ConnectionEventTypeStream, tr)
 }
@@ -74,7 +74,7 @@ func (m *MediaConnection) HandleMessage(message *models.Message) error {
 	case enums.ServerMessageTypeCandidate:
 		m.negotiator.HandleCandidate(payload.Candidate)
 	default:
-		m.log.Warnf("Unrecognized message type:%s from peer:%s", mtype, m.peerID)
+		m.log.Warn().Msgf("Unrecognized message type:%s from peer:%s", mtype, m.peerID)
 	}
 	return nil
 }
@@ -83,7 +83,7 @@ func (m *MediaConnection) HandleMessage(message *models.Message) error {
 func (m *MediaConnection) Answer(tl webrtc.TrackLocal, options *AnswerOption) {
 
 	if m.localStream != nil {
-		m.log.Warn("Local stream already exists on this MediaConnection. Are you answering a call twice?")
+		m.log.Warn().Msg("Local stream already exists on this MediaConnection. Are you answering a call twice?")
 		return
 	}
 

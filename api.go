@@ -7,21 +7,21 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
 // NewAPI initiate a new API client
 func NewAPI(opts Options) API {
 	return API{
 		opts: opts,
-		log:  createLogger("api", opts.Debug),
+		log:  createLogger("api", zerolog.DebugLevel),
 	}
 }
 
 // API wrap calls to API server
 type API struct {
 	opts Options
-	log  *logrus.Entry
+	log  zerolog.Logger
 }
 
 func (a *API) buildURL(method string) string {

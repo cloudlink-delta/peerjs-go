@@ -55,11 +55,11 @@ func NewDataConnection(peerID string, peer *Peer, opts ConnectionOptions) (*Data
 }
 
 // Where exactly does this go?
-type chunkedData struct {
+/* type chunkedData struct {
 	Data  []byte
 	Count int
 	Total int
-}
+} */
 
 // DataConnection track a connection with a remote Peer
 type DataConnection struct {
@@ -96,18 +96,18 @@ func (d *DataConnection) configureDataChannel() {
 
 	d.DataChannel.OnOpen(func() {
 		//TODO
-		d.log.Debugf(`DC#%s dc connection success`, d.GetID())
+		d.log.Debug().Msgf(`DC#%s dc connection success`, d.GetID())
 		d.Open = true
 		d.Emit(enums.ConnectionEventTypeOpen, nil)
 	})
 
 	d.DataChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
-		d.log.Debugf(`DC#%s dc onmessage: %v`, d.GetID(), msg.Data)
+		d.log.Debug().Msgf(`DC#%s dc onmessage: %v`, d.GetID(), msg.Data)
 		d.handleDataMessage(msg)
 	})
 
 	d.DataChannel.OnClose(func() {
-		d.log.Debugf(`DC#%s dc closed for %s`, d.GetID(), d.peerID)
+		d.log.Debug().Msgf(`DC#%s dc closed for %s`, d.GetID(), d.peerID)
 		d.Close()
 	})
 
@@ -230,7 +230,7 @@ func (d *DataConnection) Send(data []byte, chunked bool) error {
 
 	err := d.DataChannel.Send(data)
 	if err != nil {
-		d.log.Warnf("Send failed: %s", err)
+		d.log.Warn().Msgf("Send failed: %s", err)
 		return err
 	}
 
@@ -338,10 +338,10 @@ func (d *DataConnection) HandleMessage(message *models.Message) error {
 	case enums.ServerMessageTypeCandidate:
 		err := d.negotiator.HandleCandidate(payload.Candidate)
 		if err != nil {
-			d.log.Errorf("Failed to handle candidate for peer=%s: %s", d.peerID, err)
+			d.log.Error().Msgf("Failed to handle candidate for peer=%s: %s", d.peerID, err)
 		}
 	default:
-		d.log.Warnf(
+		d.log.Warn().Msgf(
 			"Unrecognized message type: %s from peer: %s",
 			message.Type,
 			d.peerID,

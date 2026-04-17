@@ -4,7 +4,7 @@ import (
 	"github.com/cloudlink-delta/peerjs-go/emitter"
 	"github.com/cloudlink-delta/peerjs-go/models"
 	"github.com/pion/webrtc/v3"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
 // Connection shared interface
@@ -27,7 +27,7 @@ func newBaseConnection(connType string, peer *Peer, opts ConnectionOptions) Base
 		Emitter:    emitter.NewEmitter(),
 		Type:       connType,
 		Provider:   peer,
-		log:        createLogger(connType, opts.Debug),
+		log:        createLogger(connType, zerolog.DebugLevel),
 		opts:       opts,
 		negotiator: nil,
 	}
@@ -61,7 +61,7 @@ type BaseConnection struct {
 	// BufferSize The number of messages queued to be sent once the browser buffer is no longer full.
 	BufferSize int
 	opts       ConnectionOptions
-	log        *logrus.Entry
+	log        zerolog.Logger
 	negotiator *Negotiator
 }
 
@@ -83,7 +83,7 @@ func (c *BaseConnection) GetPeerConnection() *webrtc.PeerConnection {
 // SetPeerConnection set the underlying WebRTC PeerConnection
 func (c *BaseConnection) SetPeerConnection(pc *webrtc.PeerConnection) {
 	c.PeerConnection = pc
-	c.log.Debugf("%v", c.PeerConnection)
+	c.log.Debug().Msgf("%v", c.PeerConnection)
 }
 
 // GetID return the connection ID

@@ -11,7 +11,7 @@ import (
 	"github.com/cloudlink-delta/peerjs-go/emitter"
 	"github.com/cloudlink-delta/peerjs-go/models"
 	"github.com/gorilla/websocket"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
 // ClientMessage wrap a message received by a client
@@ -44,7 +44,7 @@ type WebSocketServer struct {
 	upgrader websocket.Upgrader
 	clients  []*websocket.Conn
 	cMutex   sync.Mutex
-	log      *logrus.Entry
+	log      zerolog.Logger
 	realm    IRealm
 	opts     Options
 }
@@ -54,7 +54,7 @@ func (wss *WebSocketServer) Send(data []byte) {
 	for _, conn := range wss.clients {
 		err := conn.WriteMessage(websocket.BinaryMessage, data)
 		if err != nil {
-			wss.log.Warnf("Write failed: %s", err)
+			wss.log.Warn().Msgf("Write failed: %s", err)
 		}
 	}
 }
@@ -89,7 +89,7 @@ func (wss *WebSocketServer) configureWS(conn *websocket.Conn, client IClient) er
 	closed := false
 	conn.SetCloseHandler(func(code int, text string) error {
 		// if any close error happens, stop the loop and remove the client
-		wss.log.Debugf("Closed connection, cleaning up %s", client.GetID())
+		wss.log.Debug().Msgf("Closed connection, cleaning up %s", client.GetID())
 		if client.GetSocket() == conn {
 			wss.realm.RemoveClientByID(client.GetID())
 		}
@@ -106,14 +106,14 @@ func (wss *WebSocketServer) configureWS(conn *websocket.Conn, client IClient) er
 			}
 			_, raw, err := conn.ReadMessage()
 			if err != nil {
-				wss.log.Errorf("[%s] Read WS error: %s", client.GetID(), err)
+				wss.log.Error().Msgf("[%s] Read WS error: %s", client.GetID(), err)
 				return
 			}
 
 			// message handling
 			data, err := ioutil.ReadAll(bytes.NewReader(raw))
 			if err != nil {
-				wss.log.Errorf("client message read error: %s", err)
+				wss.log.Error().Msgf("client message read error: %s", err)
 				wss.Emit(WebsocketEventError, err)
 				continue
 			}
@@ -121,7 +121,7 @@ func (wss *WebSocketServer) configureWS(conn *websocket.Conn, client IClient) er
 			message := new(models.Message)
 			err = json.Unmarshal(data, message)
 			if err != nil {
-				wss.log.Errorf("client message unmarshal error: %s", err)
+				wss.log.Error().Msgf("client message unmarshal error: %s", err)
 				wss.Emit(WebsocketEventError, err)
 				continue
 			}
@@ -143,7 +143,7 @@ func (wss *WebSocketServer) registerClient(conn *websocket.Conn, id, token strin
 	if clientsCount >= wss.opts.ConcurrentLimit {
 		err := wss.sendErrorAndClose(conn, ErrorConnectionLimitExceeded)
 		if err != nil {
-			wss.log.Errorf("[sendErrorAndClose] Error: %s", err)
+			wss.log.Error().Msgf("[sendErrorAndClose] Error: %s", err)
 		}
 		return nil
 	}
@@ -173,7 +173,7 @@ func (wss *WebSocketServer) onSocketConnection(conn *websocket.Conn, r *http.Req
 	if id == "" || token == "" || key == "" {
 		err := wss.sendErrorAndClose(conn, ErrorInvalidWSParameters)
 		if err != nil {
-			wss.log.Errorf("[sendErrorAndClose] Error: %s", err)
+			wss.log.Error().Msgf("[sendErrorAndClose] Error: %s", err)
 		}
 		return
 	}
@@ -181,7 +181,7 @@ func (wss *WebSocketServer) onSocketConnection(conn *websocket.Conn, r *http.Req
 	if key != wss.opts.Key {
 		err := wss.sendErrorAndClose(conn, ErrorInvalidKey)
 		if err != nil {
-			wss.log.Errorf("[sendErrorAndClose] Error: %s", err)
+			wss.log.Error().Msgf("[sendErrorAndClose] Error: %s", err)
 		}
 		return
 	}
@@ -191,7 +191,7 @@ func (wss *WebSocketServer) onSocketConnection(conn *websocket.Conn, r *http.Req
 	if client == nil {
 		err := wss.registerClient(conn, id, token)
 		if err != nil {
-			wss.log.Errorf("[registerClient] Error: %s", err)
+			wss.log.Error().Msgf("[registerClient] Error: %s", err)
 		}
 		return
 	}
@@ -205,7 +205,7 @@ func (wss *WebSocketServer) onSocketConnection(conn *websocket.Conn, r *http.Req
 			},
 		})
 		if err != nil {
-			wss.log.Errorf("[%s] Failed to write message: %s", MessageTypeIDTaken, err)
+			wss.log.Error().Msgf("[%s] Failed to write message: %s", MessageTypeIDTaken, err)
 		}
 		go func() {
 			// wait for the client to receive the response message
@@ -224,7 +224,7 @@ func (wss *WebSocketServer) Handler() http.HandlerFunc {
 
 		c, err := wss.upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			wss.log.Warnf("upgrade error: %s", err)
+			wss.log.Warn().Msgf("upgrade error: %s", err)
 			w.WriteHeader(500)
 			// next.ServeHTTP(w, r)
 			return

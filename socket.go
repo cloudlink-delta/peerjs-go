@@ -12,7 +12,7 @@ import (
 	"github.com/cloudlink-delta/peerjs-go/enums"
 	"github.com/cloudlink-delta/peerjs-go/models"
 	"github.com/gorilla/websocket"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
 // SocketEvent carries an event from the socket
@@ -26,7 +26,7 @@ type SocketEvent struct {
 func NewSocket(opts Options) *Socket {
 	s := &Socket{
 		Emitter: emitter.NewEmitter(),
-		log:     createLogger("socket", opts.Debug),
+		log:     createLogger("socket", zerolog.DebugLevel),
 	}
 	s.opts = opts
 	s.disconnected = true
@@ -41,7 +41,7 @@ type Socket struct {
 	baseURL      string
 	disconnected bool
 	conn         *websocket.Conn
-	log          *logrus.Entry
+	log          zerolog.Logger
 	mutex        sync.Mutex
 	wsPingTimer  *time.Timer
 }
@@ -76,7 +76,7 @@ func (s *Socket) scheduleHeartbeat() {
 
 func (s *Socket) sendHeartbeat() {
 	if s.conn == nil {
-		s.log.Debug(`Cannot send heartbeat, because socket closed`)
+		s.log.Debug().Msg(`Cannot send heartbeat, because socket closed`)
 		return
 	}
 
@@ -86,13 +86,13 @@ func (s *Socket) sendHeartbeat() {
 
 	res, err := json.Marshal(msg)
 	if err != nil {
-		s.log.Errorf("sendHeartbeat: Failed to serialize message: %s", err)
+		s.log.Error().Msgf("sendHeartbeat: Failed to serialize message: %s", err)
 	}
 
 	// s.log.Debug("Send heartbeat")
 	err = s.Send(res)
 	if err != nil {
-		s.log.Errorf("sendHeartbeat: Failed to send message: %s", err)
+		s.log.Error().Msgf("sendHeartbeat: Failed to send message: %s", err)
 		return
 	}
 
@@ -111,7 +111,7 @@ func (s *Socket) Start(id string, token string) error {
 	}
 
 	url := s.baseURL + fmt.Sprintf("&id=%s&token=%s", id, token)
-	s.log.Debugf("Connecting to %s", url)
+	s.log.Debug().Msgf("Connecting to %s", url)
 	c, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		return err
@@ -133,40 +133,40 @@ func (s *Socket) Start(id string, token string) error {
 		for {
 
 			if s.conn == nil {
-				s.log.Debug("WS connection unset, closing read go routine")
+				s.log.Debug().Msg("WS connection unset, closing read go routine")
 				return
 			}
 
 			msgType, raw, err := s.conn.ReadMessage()
-			s.log.Debugf("WS msg %v", msgType)
+			s.log.Debug().Msgf("WS msg %v", msgType)
 			if err != nil {
 				// catch close error, avoid panic reading a closed conn
 				if _, ok := err.(*websocket.CloseError); ok {
-					s.log.Debugf("websocket closed: %s", err)
+					s.log.Debug().Msgf("websocket closed: %s", err)
 					s.Emit(enums.SocketEventTypeDisconnected, SocketEvent{enums.SocketEventTypeDisconnected, nil, err})
 					return
 				} else if opErr, ok := err.(*net.OpError); ok {
-					s.log.Debugf("websocket closed: %s OpErr Op %s", opErr, opErr.Op)
+					s.log.Debug().Msgf("websocket closed: %s OpErr Op %s", opErr, opErr.Op)
 					s.Emit(enums.SocketEventTypeDisconnected, SocketEvent{enums.SocketEventTypeDisconnected, nil, err})
 					return
 				}
-				s.log.Warnf("websocket read error: %s", err)
+				s.log.Warn().Msgf("websocket read error: %s", err)
 				continue
 			}
 
-			s.log.Infof("websocket message: %s", raw)
+			s.log.Info().Msgf("websocket message: %s", raw)
 
 			if msgType == websocket.TextMessage {
 
 				msg := models.Message{}
 				err = json.Unmarshal(raw, &msg)
 				if err != nil {
-					s.log.Errorf("Failed to decode websocket message=%s %s", string(raw), err)
+					s.log.Error().Msgf("Failed to decode websocket message=%s %s", string(raw), err)
 				}
 
 				s.Emit(enums.SocketEventTypeMessage, SocketEvent{enums.SocketEventTypeMessage, &msg, err})
 			} else {
-				s.log.Warnf("Unmanaged websocket message type %d", msgType)
+				s.log.Warn().Msgf("Unmanaged websocket message type %d", msgType)
 			}
 
 		}
@@ -185,13 +185,13 @@ func (s *Socket) Close() error {
 		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
 	)
 	if err != nil {
-		s.log.Debugf("Failed to send close message: %s", err)
+		s.log.Debug().Msgf("Failed to send close message: %s", err)
 	}
 	err = s.conn.Close()
 	if err != nil {
-		s.log.Warnf("WS close error: %s", err)
+		s.log.Warn().Msgf("WS close error: %s", err)
 	}
-	s.log.Debug("Closed websocket")
+	s.log.Debug().Msg("Closed websocket")
 	s.disconnected = true
 	s.conn = nil
 	return err

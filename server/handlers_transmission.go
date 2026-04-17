@@ -40,7 +40,7 @@ func NewTransmissionHandler(realm IRealm, opts Options) func(client IClient, mes
 				// This happens when a peer disconnects without closing connections and
 				// the associated WebSocket has not closed.
 				// Tell other side to stop trying.
-				log.Warnf("Error: %s", err)
+				log.Warn().Msgf("Error: %s", err)
 				if socket != nil {
 					socket.Close()
 				} else {

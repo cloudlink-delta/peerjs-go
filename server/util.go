@@ -1,9 +1,10 @@
 package server
 
 import (
+	"os"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
 // return time in millis
@@ -12,15 +13,14 @@ func getTime() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
-func createLogger(ctx string, opts Options) *logrus.Entry {
-	logger := logrus.New()
-	level, err := logrus.ParseLevel(opts.LogLevel)
-	if err != nil {
-		logger.Fatalf("Cannot parse log level %s", opts.LogLevel)
-	}
-	logger.SetLevel(level)
+func createLogger(ctx string, opts Options) zerolog.Logger {
+	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+	log := zerolog.New(output).With().Timestamp().Logger().Level(opts.LogLevel)
 
-	return logger.WithFields(logrus.Fields{
-		"context": ctx,
-	})
+	logger := log.With().
+		Str("module", "server").
+		Str("context", ctx).
+		Logger()
+
+	return logger
 }

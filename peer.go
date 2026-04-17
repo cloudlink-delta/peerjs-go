@@ -9,7 +9,7 @@ import (
 	"github.com/cloudlink-delta/peerjs-go/enums"
 	"github.com/cloudlink-delta/peerjs-go/models"
 	"github.com/pion/webrtc/v3"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
 // DefaultKey is the default API key
@@ -23,10 +23,10 @@ var socketEvents = []string{
 }
 
 // Where exactly does this go?
-type socketEventWrapper struct {
+/* type socketEventWrapper struct {
 	Event string
 	Data  interface{}
-}
+} */
 
 type PeerError struct {
 	Err  error
@@ -55,7 +55,7 @@ func NewPeer(id string, opts Options) (*Peer, error) {
 		}
 	}
 
-	p.log = createLogger(fmt.Sprintf("peer:%s", id), opts.Debug)
+	p.log = createLogger(fmt.Sprintf("peer:%s", id), zerolog.DebugLevel)
 
 	err := p.initialize(id)
 	if err != nil {
@@ -73,7 +73,7 @@ type Peer struct {
 	connections  map[string]map[string]Connection
 	api          API
 	socket       *Socket
-	log          *logrus.Entry
+	log          zerolog.Logger
 	open         bool
 	destroyed    bool
 	disconnected bool
@@ -148,7 +148,7 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 	case enums.ServerMessageTypeOpen:
 		p.lastServerID = p.ID
 		p.open = true
-		p.log.Debugf("Open session with id=%s", p.ID)
+		p.log.Debug().Msgf("Open session with id=%s", p.ID)
 		p.Emit(enums.PeerEventTypeOpen, p.ID)
 	case enums.ServerMessageTypeError:
 		if msg.Error == nil {
@@ -161,7 +161,7 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 		p.abort(enums.PeerErrorTypeInvalidKey, fmt.Errorf("API KEY %s is invalid", p.opts.Key))
 	case enums.ServerMessageTypeLeave: // Another peer has closed its connection to this peer.
 		peerID := msg.Message.GetSrc()
-		p.log.Debugf("Received leave message from %s", peerID)
+		p.log.Debug().Msgf("Received leave message from %s", peerID)
 		p.cleanupPeer(peerID)
 		delete(p.connections, peerID)
 	case enums.ServerMessageTypeExpire: // The offer sent to a peer has expired without response.
@@ -174,7 +174,7 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 
 		if ok {
 			connection.Close()
-			p.log.Warnf("Offer received for existing Connection ID %s", connectionID)
+			p.log.Warn().Msgf("Offer received for existing Connection ID %s", connectionID)
 		}
 
 		var err error
@@ -187,7 +187,7 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 				Metadata:     payload.Metadata,
 			})
 			if err != nil {
-				p.log.Errorf("Cannot initialize MediaConnection: %s", err)
+				p.log.Error().Msgf("Cannot initialize MediaConnection: %s", err)
 				return
 			}
 			p.AddConnection(peerID, connection)
@@ -203,13 +203,13 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 				SDP:           *payload.SDP,
 			})
 			if err != nil {
-				p.log.Errorf("Cannot initialize DataConnection: %s", err)
+				p.log.Error().Msgf("Cannot initialize DataConnection: %s", err)
 				return
 			}
 			p.AddConnection(peerID, connection)
 			p.Emit(enums.PeerEventTypeConnection, connection)
 		default:
-			p.log.Warnf(`Received malformed connection type:%s`, payload.Type)
+			p.log.Warn().Msgf(`Received malformed connection type:%s`, payload.Type)
 			return
 		}
 
@@ -222,7 +222,7 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 	default:
 
 		if msg.Message == nil {
-			p.log.Warnf(`You received a malformed message from %s of type %s`, peerID, msg.Type)
+			p.log.Warn().Msgf(`You received a malformed message from %s of type %s`, peerID, msg.Type)
 			return
 		}
 
@@ -236,7 +236,7 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 			// Store for possible later use
 			p.storeMessage(connectionID, *msg.Message)
 		} else {
-			p.log.Warnf("You received an unrecognized message: %v", msg.Message)
+			p.log.Warn().Msgf("You received an unrecognized message: %v", msg.Message)
 		}
 	}
 }
@@ -310,7 +310,7 @@ func (p *Peer) Connect(peerID string, opts *ConnectionOptions) (*DataConnection,
 	}
 
 	if p.disconnected {
-		p.log.Warn(`
+		p.log.Warn().Msg(`
 	  You cannot connect to a new Peer because you called .disconnect() on this Peer
 	  and ended your connection with the server. You can create a new Peer to reconnect,
 	  or call reconnect on this peer if you believe its ID to still be available`)
@@ -324,10 +324,6 @@ func (p *Peer) Connect(peerID string, opts *ConnectionOptions) (*DataConnection,
 
 	// indicate we are starting the connection
 	opts.Originator = true
-
-	if opts.Debug == -1 {
-		opts.Debug = p.opts.Debug
-	}
 
 	dataConnection, err := NewDataConnection(peerID, p, *opts)
 	if err != nil {
@@ -351,7 +347,7 @@ func (p *Peer) Call(peerID string, track webrtc.TrackLocal, opts *ConnectionOpti
 	}
 
 	if p.disconnected {
-		p.log.Warn("You cannot connect to a new Peer because you called .disconnect() on this Peer and ended your connection with the server. You can create a new Peer to reconnect")
+		p.log.Warn().Msg("You cannot connect to a new Peer because you called .disconnect() on this Peer and ended your connection with the server. You can create a new Peer to reconnect")
 		err := errors.New("Cannot connect to new Peer after disconnecting from server")
 		p.EmitError(
 			enums.PeerErrorTypeDisconnected,
@@ -362,7 +358,7 @@ func (p *Peer) Call(peerID string, track webrtc.TrackLocal, opts *ConnectionOpti
 
 	if track == nil && opts.Stream != nil {
 		err := errors.New("To call a peer, you must provide a stream")
-		p.log.Error(err)
+		p.log.Error().Msg(err.Error())
 		return nil, err
 	}
 
@@ -372,7 +368,7 @@ func (p *Peer) Call(peerID string, track webrtc.TrackLocal, opts *ConnectionOpti
 
 	mediaConnection, err := NewMediaConnection(peerID, p, *opts)
 	if err != nil {
-		p.log.Errorf("Failed to create a MediaConnection: %s", err)
+		p.log.Error().Msgf("Failed to create a MediaConnection: %s", err)
 		return nil, err
 	}
 	p.AddConnection(peerID, mediaConnection)
@@ -380,7 +376,7 @@ func (p *Peer) Call(peerID string, track webrtc.TrackLocal, opts *ConnectionOpti
 }
 
 func (p *Peer) abort(errType string, err error) error {
-	p.log.Error("Aborting!")
+	p.log.Error().Msg("Aborting!")
 	p.EmitError(errType, err)
 	p.Close()
 	return err
@@ -388,7 +384,7 @@ func (p *Peer) abort(errType string, err error) error {
 
 // EmitError emits an error
 func (p *Peer) EmitError(errType string, err error) {
-	p.log.Errorf("Error: %s", err)
+	p.log.Error().Msgf("Error: %s", err)
 	p.Emit(enums.PeerEventTypeError, PeerError{
 		Type: errType,
 		Err:  err,
@@ -396,7 +392,7 @@ func (p *Peer) EmitError(errType string, err error) {
 }
 
 func (p *Peer) initialize(id string) error {
-	p.log.Debugf("Initializing id=%s", id)
+	p.log.Debug().Msgf("Initializing id=%s", id)
 	p.ID = id
 	//register event handler
 	p.registerSocketHandlers()
@@ -413,7 +409,7 @@ func (p *Peer) Destroy() {
 		return
 	}
 
-	p.log.Debugf(`Destroy peer with ID:%s`, p.ID)
+	p.log.Debug().Msgf(`Destroy peer with ID:%s`, p.ID)
 
 	p.Disconnect()
 	p.cleanup()
@@ -433,7 +429,7 @@ func (p *Peer) cleanup() {
 	err := p.socket.Close()
 	p.socket = nil
 	if err != nil {
-		p.log.Warnf("Failed to close socket: %s", err)
+		p.log.Warn().Msgf("Failed to close socket: %s", err)
 	}
 }
 
@@ -459,7 +455,7 @@ func (p *Peer) Disconnect() {
 
 	currentID := p.ID
 
-	p.log.Debugf("Disconnect peer with ID:%s", currentID)
+	p.log.Debug().Msgf("Disconnect peer with ID:%s", currentID)
 
 	p.disconnected = true
 	p.open = false
@@ -478,7 +474,7 @@ func (p *Peer) Disconnect() {
 func (p *Peer) Reconnect() error {
 
 	if p.disconnected && !p.destroyed {
-		p.log.Debugf(`Attempting reconnection to server with ID %s`, p.lastServerID)
+		p.log.Debug().Msgf(`Attempting reconnection to server with ID %s`, p.lastServerID)
 		p.disconnected = false
 		p.initialize(p.lastServerID)
 		return nil
@@ -490,7 +486,7 @@ func (p *Peer) Reconnect() error {
 
 	if !p.disconnected && !p.open {
 		// Do nothing. We're still connecting the first time.
-		p.log.Error("In a hurry? We're still trying to make the initial connection!")
+		p.log.Error().Msg("In a hurry? We're still trying to make the initial connection!")
 		return nil
 	}
 

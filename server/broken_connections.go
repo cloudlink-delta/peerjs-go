@@ -3,12 +3,12 @@ package server
 import (
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
 const DefaultCheckInterval = 300
 
-//NewCheckBrokenConnections create a new CheckBrokenConnections
+// NewCheckBrokenConnections create a new CheckBrokenConnections
 func NewCheckBrokenConnections(realm IRealm, opts Options, onClose func(client IClient)) *CheckBrokenConnections {
 	if onClose == nil {
 		onClose = func(client IClient) {}
@@ -22,13 +22,13 @@ func NewCheckBrokenConnections(realm IRealm, opts Options, onClose func(client I
 	}
 }
 
-//CheckBrokenConnections watch for broken connections
+// CheckBrokenConnections watch for broken connections
 type CheckBrokenConnections struct {
 	realm   IRealm
 	opts    Options
 	onClose func(IClient)
 	ticker  *time.Ticker
-	log     *logrus.Entry
+	log     zerolog.Logger
 	close   chan bool
 }
 
@@ -53,10 +53,10 @@ func (b *CheckBrokenConnections) checkConnections() {
 
 		socket := client.GetSocket()
 		if socket != nil {
-			b.log.Infof("Closing broken connection clientID=%s", clientID)
+			b.log.Info().Msgf("Closing broken connection clientID=%s", clientID)
 			err := socket.Close()
 			if err != nil {
-				b.log.Warnf("Failed to close socket: %s", err)
+				b.log.Warn().Msgf("Failed to close socket: %s", err)
 			}
 		}
 		b.realm.ClearMessageQueue(clientID)
@@ -66,7 +66,7 @@ func (b *CheckBrokenConnections) checkConnections() {
 	}
 }
 
-//Stop close the connection checker
+// Stop close the connection checker
 func (b *CheckBrokenConnections) Stop() {
 	if b.ticker == nil {
 		return
@@ -74,7 +74,7 @@ func (b *CheckBrokenConnections) Stop() {
 	b.close <- true
 }
 
-//Start initialize the connection checker
+// Start initialize the connection checker
 func (b *CheckBrokenConnections) Start() {
 
 	b.ticker = time.NewTicker(DefaultCheckInterval * time.Millisecond)

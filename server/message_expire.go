@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/cloudlink-delta/peerjs-go/models"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 )
 
 // IMessagesExpire MessagesExpire interface
@@ -30,7 +30,7 @@ type MessagesExpire struct {
 	opts           Options
 	messageHandler IMessageHandler
 	ticker         *time.Ticker
-	log            *logrus.Entry
+	log            zerolog.Logger
 	close          chan bool
 }
 
