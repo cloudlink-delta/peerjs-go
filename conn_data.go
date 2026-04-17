@@ -54,6 +54,7 @@ func NewDataConnection(peerID string, peer *Peer, opts ConnectionOptions) (*Data
 	return d, err
 }
 
+// Where exactly does this go?
 type chunkedData struct {
 	Data  []byte
 	Count int

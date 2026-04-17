@@ -22,6 +22,7 @@ var socketEvents = []string{
 	enums.SocketEventTypeClose,
 }
 
+// Where exactly does this go?
 type socketEventWrapper struct {
 	Event string
 	Data  interface{}
