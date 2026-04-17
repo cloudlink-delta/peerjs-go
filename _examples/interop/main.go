@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/muka/peerjs-go"
+	peer "github.com/cloudlink-delta/peerjs-go"
 )
 
 func fail(err error) {

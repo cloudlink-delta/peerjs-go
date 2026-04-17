@@ -1,9 +1,9 @@
 package peer
 
 import (
-	"github.com/muka/peerjs-go/enums"
-	"github.com/muka/peerjs-go/models"
-	"github.com/muka/peerjs-go/util"
+	"github.com/cloudlink-delta/peerjs-go/enums"
+	"github.com/cloudlink-delta/peerjs-go/models"
+	"github.com/cloudlink-delta/peerjs-go/util"
 	"github.com/pion/webrtc/v3"
 )
 

@@ -1,3 +1,7 @@
+# PeerJS for CloudLink Delta
+This is a fork of the peerjs-go library with security updates to it's dependencies and minor quality-of-life improvements.
+The original README is as follows:
+
 # Golang PeerJS
 
 A Golang port of [PeerJS](https://github.com/peers/peerjs)

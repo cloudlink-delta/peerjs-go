@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cloudlink-delta/peerjs-go/emitter"
+	"github.com/cloudlink-delta/peerjs-go/models"
 	"github.com/gorilla/websocket"
-	"github.com/muka/peerjs-go/emitter"
-	"github.com/muka/peerjs-go/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +20,7 @@ type ClientMessage struct {
 	Message *models.Message
 }
 
-//NewWebSocketServer create a new WebSocketServer
+// NewWebSocketServer create a new WebSocketServer
 func NewWebSocketServer(realm IRealm, opts Options) *WebSocketServer {
 	wss := WebSocketServer{
 		Emitter:  emitter.NewEmitter(),
@@ -59,7 +59,7 @@ func (wss *WebSocketServer) Send(data []byte) {
 	}
 }
 
-//onSocketConnection called when a client connect
+// onSocketConnection called when a client connect
 func (wss *WebSocketServer) sendErrorAndClose(conn *websocket.Conn, msg string) error {
 	err := conn.WriteJSON(models.Message{
 		Type: MessageTypeError,
@@ -77,7 +77,6 @@ func (wss *WebSocketServer) sendErrorAndClose(conn *websocket.Conn, msg string) 
 	return nil
 }
 
-//
 func (wss *WebSocketServer) configureWS(conn *websocket.Conn, client IClient) error {
 	client.SetSocket(conn)
 
@@ -136,7 +135,7 @@ func (wss *WebSocketServer) configureWS(conn *websocket.Conn, client IClient) er
 	return nil
 }
 
-//registerClient
+// registerClient
 func (wss *WebSocketServer) registerClient(conn *websocket.Conn, id, token string) error {
 	// Check concurrent limit
 	clientsCount := len(wss.realm.GetClientsIds())
@@ -164,7 +163,7 @@ func (wss *WebSocketServer) registerClient(conn *websocket.Conn, id, token strin
 	return nil
 }
 
-//onSocketConnection called when a client connect
+// onSocketConnection called when a client connect
 func (wss *WebSocketServer) onSocketConnection(conn *websocket.Conn, r *http.Request) {
 	query := r.URL.Query()
 	id := query.Get("id")

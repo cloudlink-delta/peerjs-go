@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/muka/peerjs-go/models"
+	"github.com/cloudlink-delta/peerjs-go/models"
 	"github.com/sirupsen/logrus"
 )
 
-//IMessagesExpire MessagesExpire interface
+// IMessagesExpire MessagesExpire interface
 type IMessagesExpire interface {
 	Start()
 	Stop()
@@ -24,7 +24,7 @@ func NewMessagesExpire(realm IRealm, opts Options, messageHandler IMessageHandle
 	}
 }
 
-//MessagesExpire check for expired messages
+// MessagesExpire check for expired messages
 type MessagesExpire struct {
 	realm          IRealm
 	opts           Options
@@ -73,7 +73,7 @@ func (b *MessagesExpire) pruneOutstanding() {
 	}
 }
 
-//Start the message expire check
+// Start the message expire check
 func (b *MessagesExpire) Start() {
 
 	b.ticker = time.NewTicker(DefaultCheckInterval * time.Millisecond)
@@ -93,7 +93,7 @@ func (b *MessagesExpire) Start() {
 
 }
 
-//Stop the message expire check
+// Stop the message expire check
 func (b *MessagesExpire) Stop() {
 	if b.ticker == nil {
 		return

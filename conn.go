@@ -1,13 +1,13 @@
 package peer
 
 import (
-	"github.com/muka/peerjs-go/emitter"
-	"github.com/muka/peerjs-go/models"
+	"github.com/cloudlink-delta/peerjs-go/emitter"
+	"github.com/cloudlink-delta/peerjs-go/models"
 	"github.com/pion/webrtc/v3"
 	"github.com/sirupsen/logrus"
 )
 
-//Connection shared interface
+// Connection shared interface
 type Connection interface {
 	GetType() string
 	GetID() string
