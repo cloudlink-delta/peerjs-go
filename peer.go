@@ -127,9 +127,7 @@ func (p *Peer) RemoveConnection(connection Connection) {
 		}
 	}
 	// remove lost messages
-	if _, ok := p.lostMessages[id]; ok {
-		delete(p.lostMessages, id)
-	}
+	delete(p.lostMessages, id)
 }
 
 // GetConnection return a connection based on peerID and connectionID
@@ -164,9 +162,7 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 		peerID := msg.Message.GetSrc()
 		p.log.Debugf("Received leave message from %s", peerID)
 		p.cleanupPeer(peerID)
-		if _, ok := p.connections[peerID]; ok {
-			delete(p.connections, peerID)
-		}
+		delete(p.connections, peerID)
 	case enums.ServerMessageTypeExpire: // The offer sent to a peer has expired without response.
 		p.EmitError(enums.PeerErrorTypePeerUnavailable, fmt.Errorf("Could not connect to peer %s", peerID))
 	case enums.ServerMessageTypeOffer:
