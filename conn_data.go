@@ -334,20 +334,17 @@ func (d *DataConnection) HandleMessage(message *models.Message) error {
 	switch message.Type {
 	case enums.ServerMessageTypeAnswer:
 		d.negotiator.handleSDP(message.Type, *payload.SDP)
-		break
 	case enums.ServerMessageTypeCandidate:
 		err := d.negotiator.HandleCandidate(payload.Candidate)
 		if err != nil {
 			d.log.Errorf("Failed to handle candidate for peer=%s: %s", d.peerID, err)
 		}
-		break
 	default:
 		d.log.Warnf(
 			"Unrecognized message type: %s from peer: %s",
 			message.Type,
 			d.peerID,
 		)
-		break
 	}
 
 	return nil

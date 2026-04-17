@@ -15,16 +15,12 @@ func createLogger(source string, debugLevel int8) *logrus.Entry {
 	switch debugLevel {
 	case 0:
 		log.SetLevel(logrus.PanicLevel)
-		break
 	case 1:
 		log.SetLevel(logrus.ErrorLevel)
-		break
 	case 2:
 		log.SetLevel(logrus.WarnLevel)
-		break
 	default:
 		log.SetLevel(logrus.DebugLevel)
-		break
 	}
 
 	//TODO configure logger format

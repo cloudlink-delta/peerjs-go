@@ -187,20 +187,16 @@ func (n *Negotiator) setupListeners(peerConnection *webrtc.PeerConnection, conne
 				fmt.Errorf("Negotiation of connection to %s failed", peerID),
 			)
 			n.connection.Close()
-			break
 		case webrtc.ICEConnectionStateClosed:
 			n.log.Debugf("iceConnectionState is closed, closing connections to %s", peerID)
 			n.connection.Emit(enums.ConnectionEventTypeError, fmt.Errorf("Connection to %s closed", peerID))
 			n.connection.Close()
-			break
 		case webrtc.ICEConnectionStateDisconnected:
 			n.log.Debugf("iceConnectionState changed to disconnected on the connection with %s", peerID)
-			break
 		case webrtc.ICEConnectionStateCompleted:
 			peerConnection.OnICECandidate(func(i *webrtc.ICECandidate) {
 				// noop
 			})
-			break
 		}
 
 		n.connection.Emit(enums.ConnectionEventTypeIceStateChanged, peerConnection.ICEConnectionState())

@@ -71,13 +71,10 @@ func (m *MediaConnection) HandleMessage(message *models.Message) error {
 		// Forward to negotiator
 		m.negotiator.handleSDP(message.GetType(), *payload.SDP)
 		m.Open = true
-		break
 	case enums.ServerMessageTypeCandidate:
 		m.negotiator.HandleCandidate(payload.Candidate)
-		break
 	default:
 		m.log.Warnf("Unrecognized message type:%s from peer:%s", mtype, m.peerID)
-		break
 	}
 	return nil
 }

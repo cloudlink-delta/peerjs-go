@@ -151,19 +151,15 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 		p.open = true
 		p.log.Debugf("Open session with id=%s", p.ID)
 		p.Emit(enums.PeerEventTypeOpen, p.ID)
-		break
 	case enums.ServerMessageTypeError:
 		if msg.Error == nil {
 			msg.Error = errors.New(payload.Msg)
 		}
 		p.abort(enums.PeerErrorTypeServerError, msg.Error)
-		break
 	case enums.ServerMessageTypeIDTaken: // The selected ID is taken.
 		p.abort(enums.PeerErrorTypeUnavailableID, fmt.Errorf("ID %s is taken", p.ID))
-		break
 	case enums.ServerMessageTypeInvalidKey: // The given API key cannot be found.
 		p.abort(enums.PeerErrorTypeInvalidKey, fmt.Errorf("API KEY %s is invalid", p.opts.Key))
-		break
 	case enums.ServerMessageTypeLeave: // Another peer has closed its connection to this peer.
 		peerID := msg.Message.GetSrc()
 		p.log.Debugf("Received leave message from %s", peerID)
@@ -171,10 +167,8 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 		if _, ok := p.connections[peerID]; ok {
 			delete(p.connections, peerID)
 		}
-		break
 	case enums.ServerMessageTypeExpire: // The offer sent to a peer has expired without response.
 		p.EmitError(enums.PeerErrorTypePeerUnavailable, fmt.Errorf("Could not connect to peer %s", peerID))
-		break
 	case enums.ServerMessageTypeOffer:
 
 		// we should consider switching this to CALL/CONNECT, but this is the least breaking option.
@@ -227,7 +221,6 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 			connection.HandleMessage(&message)
 		}
 
-		break
 	default:
 
 		if msg.Message == nil {
@@ -247,7 +240,6 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 		} else {
 			p.log.Warnf("You received an unrecognized message: %v", msg.Message)
 		}
-		break
 	}
 }
 
@@ -257,23 +249,19 @@ func (p *Peer) socketEventHandler(data interface{}) {
 	switch ev.Type {
 	case enums.SocketEventTypeMessage:
 		p.messageHandler(ev)
-		break
 	case enums.SocketEventTypeError:
 		p.abort(enums.PeerErrorTypeSocketError, ev.Error)
-		break
 	case enums.SocketEventTypeDisconnected:
 		if p.disconnected {
 			return
 		}
 		p.EmitError(enums.PeerErrorTypeNetwork, errors.New("Lost connection to server"))
 		p.Disconnect()
-		break
 	case enums.SocketEventTypeClose:
 		if p.disconnected {
 			return
 		}
 		p.abort(enums.PeerErrorTypeSocketClosed, errors.New("Underlying socket is already closed"))
-		break
 	}
 }
 
