@@ -182,6 +182,7 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 		switch payload.Type {
 		case enums.ConnectionTypeMedia:
 			connection, err = NewMediaConnection(peerID, p, ConnectionOptions{
+				LogLevel:     p.opts.LogLevel,
 				ConnectionID: connectionID,
 				Payload:      payload,
 				Metadata:     payload.Metadata,
@@ -194,6 +195,7 @@ func (p *Peer) messageHandler(msg SocketEvent) {
 			p.Emit(enums.PeerEventTypeCall, connection)
 		case enums.ConnectionTypeData:
 			connection, err = NewDataConnection(peerID, p, ConnectionOptions{
+				LogLevel:      p.opts.LogLevel,
 				ConnectionID:  connectionID,
 				Payload:       payload,
 				Metadata:      payload.Metadata,
@@ -324,6 +326,7 @@ func (p *Peer) Connect(peerID string, opts *ConnectionOptions) (*DataConnection,
 
 	// indicate we are starting the connection
 	opts.Originator = true
+	opts.LogLevel = p.opts.LogLevel
 
 	dataConnection, err := NewDataConnection(peerID, p, *opts)
 	if err != nil {

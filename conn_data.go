@@ -80,7 +80,7 @@ type DataConnection struct {
 
 // func (d *DataConnection) onQueueErr(data interface{}) {
 // 	err := data.(error)
-// 	d.log.Errorf(`DC#%s: Error occured in encoding from blob to arraybuffer, close DC: %s`, d.GetID(), err)
+// 	d.Logger.Errorf(`DC#%s: Error occured in encoding from blob to arraybuffer, close DC: %s`, d.GetID(), err)
 // 	d.Close()
 // }
 
@@ -96,18 +96,18 @@ func (d *DataConnection) configureDataChannel() {
 
 	d.DataChannel.OnOpen(func() {
 		//TODO
-		d.log.Debug().Msgf(`DC#%s dc connection success`, d.GetID())
+		d.Logger.Debug().Msgf(`DC#%s dc connection success`, d.GetID())
 		d.Open = true
 		d.Emit(enums.ConnectionEventTypeOpen, nil)
 	})
 
 	d.DataChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
-		d.log.Debug().Msgf(`DC#%s dc onmessage: %v`, d.GetID(), msg.Data)
+		d.Logger.Debug().Msgf(`DC#%s dc onmessage: %v`, d.GetID(), msg.Data)
 		d.handleDataMessage(msg)
 	})
 
 	d.DataChannel.OnClose(func() {
-		d.log.Debug().Msgf(`DC#%s dc closed for %s`, d.GetID(), d.peerID)
+		d.Logger.Debug().Msgf(`DC#%s dc closed for %s`, d.GetID(), d.peerID)
 		d.Close()
 	})
 
@@ -230,7 +230,7 @@ func (d *DataConnection) Send(data []byte, chunked bool) error {
 
 	err := d.DataChannel.Send(data)
 	if err != nil {
-		d.log.Warn().Msgf("Send failed: %s", err)
+		d.Logger.Warn().Msgf("Send failed: %s", err)
 		return err
 	}
 
@@ -238,7 +238,7 @@ func (d *DataConnection) Send(data []byte, chunked bool) error {
 
 	// if d.Serialization == SerializationTypeJSON {
 	// 	// JSON data must be marshalled before send!
-	// 	d.log.Debug("Send JSON")
+	// 	d.Logger.Debug("Send JSON")
 	// 	d.bufferedSend(raw)
 	// } else if d.Serialization == SerializationTypeBinary || d.Serialization == SerializationTypeBinaryUTF8 {
 
@@ -251,16 +251,16 @@ func (d *DataConnection) Send(data []byte, chunked bool) error {
 	// 	// }
 
 	// 	// if !chunked && len(blob) > ChunkedMTU {
-	// 	// 	d.log.Debug("Chunk payload")
+	// 	// 	d.Logger.Debug("Chunk payload")
 	// 	// 	d.sendChunks(blob)
 	// 	// 	return nil
 	// 	// }
 
-	// 	// d.log.Debugf("Send encoded payload %v", raw)
+	// 	// d.Logger.Debugf("Send encoded payload %v", raw)
 	// 	// d.bufferedSend(blob)
 
 	// } else {
-	// 	d.log.Debug("Send raw payload")
+	// 	d.Logger.Debug("Send raw payload")
 	// 	d.bufferedSend(raw)
 	// }
 
@@ -289,7 +289,7 @@ func (d *DataConnection) Send(data []byte, chunked bool) error {
 
 // 	err := d.DataChannel.Send(msg)
 // 	if err != nil {
-// 		d.log.Errorf(`DC#%s Error sending %s`, d.GetID(), err)
+// 		d.Logger.Errorf(`DC#%s Error sending %s`, d.GetID(), err)
 // 		d.buffering = true
 // 		// d.Close()
 // 		return false
@@ -322,7 +322,7 @@ func (d *DataConnection) Send(data []byte, chunked bool) error {
 // 	panic("sendChunks: binarypack not implemented, please use SerializationTypeRaw")
 // 	// // this method requires a [binarypack] encoding to work
 // 	// chunks := util.Chunk(raw)
-// 	// d.log.Debugf(`DC#%s Try to send %d chunks...`, d.GetID(), len(chunks))
+// 	// d.Logger.Debugf(`DC#%s Try to send %d chunks...`, d.GetID(), len(chunks))
 // 	// for _, chunk := range chunks {
 // 	// 	d.Send(chunk, true)
 // 	// }
@@ -338,10 +338,10 @@ func (d *DataConnection) HandleMessage(message *models.Message) error {
 	case enums.ServerMessageTypeCandidate:
 		err := d.negotiator.HandleCandidate(payload.Candidate)
 		if err != nil {
-			d.log.Error().Msgf("Failed to handle candidate for peer=%s: %s", d.peerID, err)
+			d.Logger.Error().Msgf("Failed to handle candidate for peer=%s: %s", d.peerID, err)
 		}
 	default:
-		d.log.Warn().Msgf(
+		d.Logger.Warn().Msgf(
 			"Unrecognized message type: %s from peer: %s",
 			message.Type,
 			d.peerID,

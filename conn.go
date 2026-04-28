@@ -27,7 +27,7 @@ func newBaseConnection(connType string, peer *Peer, opts ConnectionOptions) Base
 		Emitter:    emitter.NewEmitter(),
 		Type:       connType,
 		Provider:   peer,
-		log:        createLogger(connType, opts.LogLevel),
+		Logger:     createLogger(connType, opts.LogLevel),
 		opts:       opts,
 		negotiator: nil,
 	}
@@ -61,7 +61,7 @@ type BaseConnection struct {
 	// BufferSize The number of messages queued to be sent once the browser buffer is no longer full.
 	BufferSize int
 	opts       ConnectionOptions
-	log        zerolog.Logger
+	Logger     zerolog.Logger
 	negotiator *Negotiator
 }
 
@@ -83,7 +83,7 @@ func (c *BaseConnection) GetPeerConnection() *webrtc.PeerConnection {
 // SetPeerConnection set the underlying WebRTC PeerConnection
 func (c *BaseConnection) SetPeerConnection(pc *webrtc.PeerConnection) {
 	c.PeerConnection = pc
-	c.log.Debug().Msgf("%v", c.PeerConnection)
+	c.Logger.Debug().Msgf("%v", c.PeerConnection)
 }
 
 // GetID return the connection ID
