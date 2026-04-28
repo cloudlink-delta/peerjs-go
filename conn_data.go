@@ -116,12 +116,19 @@ func (d *DataConnection) configureDataChannel() {
 // Handles a DataChannel message.
 func (d *DataConnection) handleDataMessage(msg webrtc.DataChannelMessage) {
 
-	// isBinarySerialization := d.Serialization == SerializationTypeBinary ||
-	// 	d.Serialization == SerializationTypeBinaryUTF8
+	isBinarySerialization := d.Serialization == enums.SerializationTypeBinary || d.Serialization == enums.SerializationTypeBinaryUTF8
 
 	if msg.IsString {
 		d.Emit(enums.ConnectionEventTypeData, string(msg.Data))
 	} else {
+
+		// We don't support binary serializations
+		if isBinarySerialization {
+			d.Logger.Warn().Any("msg_bytes", len(msg.Data)).Msg("unsupported serialization mode")
+			d.Close()
+			return
+		}
+
 		d.Emit(enums.ConnectionEventTypeData, msg.Data)
 	}
 
