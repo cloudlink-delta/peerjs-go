@@ -1,6 +1,6 @@
 module github.com/cloudlink-delta/peerjs-go
 
-go 1.26.2
+go 1.26.5
 
 require (
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
