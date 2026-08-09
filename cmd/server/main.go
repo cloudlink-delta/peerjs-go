@@ -12,9 +12,6 @@ import (
 )
 
 func fail(err error, msg string) {
-	if err == nil {
-		return
-	}
 	if err != nil {
 		fmt.Printf("%s: %s \n", msg, err)
 		os.Exit(1)
@@ -23,7 +20,6 @@ func fail(err error, msg string) {
 
 func main() {
 
-	viper.AutomaticEnv()
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("peer")
 	viper.SetConfigName("peer")

@@ -7,7 +7,7 @@ import (
 
 	"github.com/cloudlink-delta/peerjs-go/enums"
 	"github.com/cloudlink-delta/peerjs-go/models"
-	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v4"
 	"github.com/rs/zerolog"
 )
 
@@ -15,11 +15,10 @@ import (
 const DefaultBrowser = "peerjs-go"
 
 func newWebrtcAPI(mediaEngine *webrtc.MediaEngine) *webrtc.API {
-	if mediaEngine == nil {
-		mediaEngine = new(webrtc.MediaEngine)
-		mediaEngine.RegisterDefaultCodecs()
+	if mediaEngine != nil {
+		return webrtc.NewAPI(webrtc.WithMediaEngine(mediaEngine))
 	}
-	return webrtc.NewAPI(webrtc.WithMediaEngine(mediaEngine))
+	return webrtc.NewAPI()
 }
 
 // NewNegotiator initiate a new negotiator

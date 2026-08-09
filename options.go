@@ -4,7 +4,7 @@ import (
 	"github.com/cloudlink-delta/peerjs-go/enums"
 	"github.com/cloudlink-delta/peerjs-go/models"
 	"github.com/cloudlink-delta/peerjs-go/util"
-	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v4"
 	"github.com/rs/zerolog"
 )
 

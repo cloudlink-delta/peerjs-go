@@ -3,7 +3,7 @@ package peer
 import (
 	"github.com/cloudlink-delta/peerjs-go/emitter"
 	"github.com/cloudlink-delta/peerjs-go/models"
-	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v4"
 	"github.com/rs/zerolog"
 )
 

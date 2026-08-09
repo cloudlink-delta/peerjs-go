@@ -1,7 +1,7 @@
 package peer
 
 import (
-	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v4"
 )
 
 //MediaStreamTrack interaface that wraps together TrackLocal and TrackRemote

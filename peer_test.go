@@ -9,7 +9,7 @@ import (
 
 	"github.com/cloudlink-delta/peerjs-go/server"
 	"github.com/cloudlink-delta/peerjs-go/util"
-	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v4"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )

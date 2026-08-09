@@ -1,6 +1,6 @@
 package models
 
-import "github.com/pion/webrtc/v3"
+import "github.com/pion/webrtc/v4"
 
 // Payload wraps a message payload
 type Payload struct {
